@@ -44,6 +44,7 @@ class AudioHandler:
         return self._save_file()
 
     def _save_file(self):
+        print(f"DEBUG: Saving {len(self.frames)} audio frames.")
         # Ensure tmp dir exists (it usually does on Linux)
         if not os.path.exists(os.path.dirname(TEMP_FILENAME)):
             return None
