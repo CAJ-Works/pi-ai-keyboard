@@ -66,10 +66,14 @@ GOOGLE_API_KEY=your_api_key_here
 ```
 
 ## 8. Run the Application
-You can run it manually to test:
+You can run it manually to test. Since we are using a virtual environment but need root for hardware access, run:
+
 ```bash
-sudo python3 src/main.py
+sudo .venv/bin/python3 src/main.py
 ```
+
+*(Sudo is needed for HID gadget and Input device access. Using `.venv/bin/python3` ensures we use the installed dependencies)*
+
 *(Sudo might be needed for GPIO and HID device access)*
 
 To run on boot, consider adding a systemd service.
