@@ -4,6 +4,7 @@ import os
 import signal
 import sys
 import evdev 
+from select import select
 from evdev import InputDevice, categorize, ecodes
 from audio_handler import AudioHandler
 from llm_client import LLMClient
@@ -76,58 +77,73 @@ def main():
 
     print(f"Listening for events on {device.name}...")
     
-    # Grab device to prevent input from going to system (optional, good if it acts like a keyboard)
+    # Grab device
     try:
         device.grab()
     except Exception as e:
-        print(f"Warning: Could not grab device (maybe already grabbed?): {e}")
+        print(f"Warning: Could not grab device: {e}")
 
     try:
-        for event in device.read_loop():
-            if event.type == ecodes.EV_KEY:
-                # 1 = Down (Press), 0 = Up (Release), 2 = Hold
+        while True:
+            # 1. Handle Audio Recording
+            if audio_handler.is_recording:
+                # Record a chunk. This is non-blocking (short duration)
+                audio_handler.record_chunk()
+            
+            # 2. Handle Input Events (Non-blocking check)
+            try:
+                # read() returns a generator of events, or None?
+                # actually read() yields events available. 
+                # causing a block if we iterate? No, read() is usually blocking on file descriptor.
+                # using read_one() might be better if we want strict non-blocking, but evdev blocking is intricate.
+                # Better approach: select/poll
                 
-                if event.value == 1: # Key Down
-                     # Check if it maps to an instruction
-                    if event.code in INPUT_MAP:
-                        instruction = INPUT_MAP[event.code]
-                        if not is_processing and not audio_handler.is_recording:
-                            print(f"Button {event.code} pressed. Recording...")
-                            current_instruction = instruction
-                            with no_alsa_err():
-                                audio_handler.start_recording()
-                            
-                elif event.value == 0: # Key Up
-                    # If we were recording and this is a known key (or any key? Let's stay specific)
-                    # For simplicity, if ANY mapped key is released, we check if we should stop.
-                    # Or strictly if the pressed key is released. 
-                    if event.code in INPUT_MAP and audio_handler.is_recording:
-                        print(f"Button {event.code} released. Processing...")
-                        is_processing = True
-                        
-                        # Stop and Process immediately
-                        # Since read_loop blocks, we can just do the work here synchronously
-                        # unless we want to keep listening (but we can't record parallel nicely yet).
-                        # Let's do it synchronously for simplicity.
-                        
-                        print("Stopping recording...")
-                        audio_path = audio_handler.stop_recording()
-                        
-                        if audio_path:
-                            print("Sending to LLM...")
-                            try:
-                                response = llm_client.process_audio(audio_path, current_instruction)
-                                print(f"DEBUG: Response from Gemini:\n{response}")
-                                print(f"Response received ({len(response)} chars). Typing...")
-                                type_string(response)
-                                print("Done.")
-                            except Exception as e:
-                                print(f"Error processing: {e}")
-                        else:
-                            print("No audio recorded.")
-                        
-                        current_instruction = None
-                        is_processing = False
+                # We can use read_loop() if we use async, but here we are synchronous.
+                # Let's use select on the file descriptor with a timeout of 0
+                r, w, x = select([device.fd], [], [], 0.0)
+                if r:
+                    for event in device.read():
+                        if event.type == ecodes.EV_KEY:
+                            if event.value == 1: # Key Down
+                                if event.code in INPUT_MAP:
+                                    instruction = INPUT_MAP[event.code]
+                                    if not is_processing and not audio_handler.is_recording:
+                                        print(f"Button {event.code} pressed. Recording...")
+                                        current_instruction = instruction
+                                        with no_alsa_err():
+                                            audio_handler.start_recording()
+                                            
+                            elif event.value == 0: # Key Up
+                                if event.code in INPUT_MAP and audio_handler.is_recording:
+                                    print(f"Button {event.code} released. Processing...")
+                                    is_processing = True
+                                    
+                                    print("Stopping recording...")
+                                    audio_path = audio_handler.stop_recording()
+                                    
+                                    if audio_path:
+                                        print("Sending to LLM...")
+                                        try:
+                                            response = llm_client.process_audio(audio_path, current_instruction)
+                                            print(f"DEBUG: Response from Gemini:\n{response}")
+                                            print(f"Response received ({len(response)} chars). Typing...")
+                                            type_string(response)
+                                            print("Done.")
+                                        except Exception as e:
+                                            print(f"Error processing: {e}")
+                                    else:
+                                        print("No audio recorded.")
+                                    
+                                    current_instruction = None
+                                    is_processing = False
+            except BlockingIOError:
+                pass
+            except Exception as e:
+                # print(f"Event Error: {e}")
+                pass
+                
+            # Small sleep to prevent 100% CPU when idle (recording handles its own timing mostly)
+            time.sleep(0.001)
 
     except KeyboardInterrupt:
         print("Exiting...")
