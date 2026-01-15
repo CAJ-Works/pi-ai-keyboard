@@ -3,7 +3,7 @@ import time
 import os
 import signal
 import sys
-import evdev
+import evdev 
 from evdev import InputDevice, categorize, ecodes
 from audio_handler import AudioHandler
 from llm_client import LLMClient
