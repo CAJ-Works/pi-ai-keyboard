@@ -1,0 +1,4 @@
+google-generativeai
+pyaudio
+evdev
+python-dotenv
