@@ -36,9 +36,9 @@ class LLMClient:
             
             print("Sending to Gemini...")
             
-            # Using gemini-1.5-flash which is multimodal capable
+            # Using gemini-1.5-flash-002 which is a stable multimodal version
             response = self.client.models.generate_content(
-                model='gemini-1.5-flash',
+                model='gemini-1.5-flash-002',
                 contents=[
                     instruction,
                     types.Part.from_bytes(data=audio_bytes, mime_type="audio/wav")
