@@ -15,14 +15,38 @@ class AudioHandler:
         self.frames = []
         self.stream = None
         self.is_recording = False
+        self.device_index = None
+        
+        # Find USB Audio Device
+        print("\n--- Audio Devices ---")
+        found = False
+        for i in range(self.audio.get_device_count()):
+            dev = self.audio.get_device_info_by_index(i)
+            print(f"Index {i}: {dev.get('name')} (Input Channels: {dev.get('maxInputChannels')})")
+            # Look for USB Audio Codec or similar, and ensure it has inputs
+            if not found and dev.get('maxInputChannels') > 0:
+                name = dev.get('name').lower()
+                if "usb" in name or "codec" in name or "pcm2902" in name:
+                    self.device_index = i
+                    print(f"*** Selected Input Device: {dev.get('name')} ***")
+                    found = True
+        print("---------------------\n")
+        
+        if self.device_index is None:
+             print("WARNING: No specific USB Audio device found. Using system default.")
 
     def start_recording(self):
         self.frames = []
         self.is_recording = True
-        self.stream = self.audio.open(format=FORMAT, channels=CHANNELS,
-                                      rate=RATE, input=True,
-                                      frames_per_buffer=CHUNK)
-        print("Recording started...")
+        try:
+            self.stream = self.audio.open(format=FORMAT, channels=CHANNELS,
+                                          rate=RATE, input=True,
+                                          input_device_index=self.device_index,
+                                          frames_per_buffer=CHUNK)
+            print("Recording started...")
+        except Exception as e:
+            print(f"Error starting audio stream: {e}")
+            self.is_recording = False
 
     def record_chunk(self):
         if self.is_recording and self.stream:
