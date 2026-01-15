@@ -36,9 +36,9 @@ class LLMClient:
             
             print("Sending to Gemini...")
             
-            # Reverting to standard alias
+            # Using gemini-3-flash-preview as requested
             response = self.client.models.generate_content(
-                model='gemini-1.5-flash',
+                model='gemini-3-flash-preview',
                 contents=[
                     instruction,
                     types.Part.from_bytes(data=audio_bytes, mime_type="audio/wav")
