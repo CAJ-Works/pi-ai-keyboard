@@ -18,6 +18,9 @@ Copy this repository to the Pi (e.g., to `~/pi-ai-keyboard`).
 ## 4. Install Python Requirements
 ```bash
 cd ~/pi-ai-keyboard
+udo apt install -y python3-venv libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0
+python3 -m venv .venv
+source .venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
@@ -52,7 +55,7 @@ To enable the Pi to act as a keyboard, we need to run the `usb_gadget.sh` script
 4. If you want to use different keys:
    - Update `src/main.py`: `INPUT_MAP` with new `ecodes`.
 
-## 6. Setup API Key
+## 7. Setup API Key
 Create a `.env` file in the root directory:
 ```bash
 nano .env
@@ -62,11 +65,15 @@ Add your Gemini API Key:
 GOOGLE_API_KEY=your_api_key_here
 ```
 
-## 7. Run the Application
-You can run it manually to test:
+## 8. Run the Application
+You can run it manually to test. Since we are using a virtual environment but need root for hardware access, run:
+
 ```bash
-sudo python3 src/main.py
+sudo .venv/bin/python3 src/main.py
 ```
+
+*(Sudo is needed for HID gadget and Input device access. Using `.venv/bin/python3` ensures we use the installed dependencies)*
+
 *(Sudo might be needed for GPIO and HID device access)*
 
 To run on boot, consider adding a systemd service.
