@@ -18,7 +18,7 @@ Copy this repository to the Pi (e.g., to `~/pi-ai-keyboard`).
 ## 4. Install Python Requirements
 ```bash
 cd ~/pi-ai-keyboard
-udo apt install -y python3-venv libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0
+sudo apt install -y python3-venv libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0
 python3 -m venv .venv
 source .venv/bin/activate
 pip3 install -r requirements.txt
