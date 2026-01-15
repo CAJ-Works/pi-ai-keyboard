@@ -3,11 +3,26 @@ import time
 import os
 import signal
 import sys
-import evdev
+import import evdev
 from evdev import InputDevice, categorize, ecodes
 from audio_handler import AudioHandler
 from llm_client import LLMClient
 from keyboard_mapper import type_string
+from ctypes import *
+from contextlib import contextmanager
+
+# Suppress ALSA/Jack error messages
+ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
+def py_error_handler(filename, line, function, err, fmt):
+    pass
+c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
+
+@contextmanager
+def no_alsa_err():
+    asound = cdll.LoadLibrary('libasound.so.2')
+    asound.snd_lib_error_set_handler(c_error_handler)
+    yield
+    asound.snd_lib_error_set_handler(None)
 
 # Input Configuration
 # Search for a device with this name. Common for USB Keyboards.
@@ -73,7 +88,8 @@ def main():
                         if not is_processing and not audio_handler.is_recording:
                             print(f"Button {event.code} pressed. Recording...")
                             current_instruction = instruction
-                            audio_handler.start_recording()
+                            with no_alsa_err():
+                                audio_handler.start_recording()
                             
                 elif event.value == 0: # Key Up
                     # If we were recording and this is a known key (or any key? Let's stay specific)
