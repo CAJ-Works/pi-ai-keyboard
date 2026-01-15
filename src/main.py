@@ -117,7 +117,8 @@ def main():
                             print("Sending to LLM...")
                             try:
                                 response = llm_client.process_audio(audio_path, current_instruction)
-                                print(f"Response received. Typing...")
+                                print(f"DEBUG: Response from Gemini:\n{response}")
+                                print(f"Response received ({len(response)} chars). Typing...")
                                 type_string(response)
                                 print("Done.")
                             except Exception as e:
