@@ -39,8 +39,6 @@ INPUT_MAP = {
 
 # State
 current_instruction = None
-audio_handler = AudioHandler()
-llm_client = LLMClient()
 is_processing = False
 
 def find_device():
@@ -60,6 +58,14 @@ def find_device():
 
 def main():
     global current_instruction, is_processing
+
+    # Initialize handlers
+    print("Initializing services...")
+    llm_client = LLMClient()
+    
+    # Initialize AudioHandler with ALSA suppression
+    with no_alsa_err():
+        audio_handler = AudioHandler()
 
     print("Looking for input device...")
     device = find_device()
