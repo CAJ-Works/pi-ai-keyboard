@@ -48,6 +48,14 @@ class LLMClient:
             return response.text
         except Exception as e:
             print(f"Error calling Gemini: {e}")
+            if "404" in str(e) or "NOT_FOUND" in str(e):
+                print("\n--- DEBUG: Available Models ---")
+                try:
+                    for model in self.client.models.list():
+                        print(f" - {model.name}")
+                except Exception as list_err:
+                    print(f"Could not list models: {list_err}")
+                print("-------------------------------\n")
             return f"Error: {str(e)}"
 
 if __name__ == "__main__":
