@@ -55,7 +55,7 @@ To enable the Pi to act as a keyboard, we need to run the `usb_gadget.sh` script
 4. If you want to use different keys:
    - Update `src/main.py`: `INPUT_MAP` with new `ecodes`.
 
-## 6. Setup API Key
+## 7. Setup API Key
 Create a `.env` file in the root directory:
 ```bash
 nano .env
@@ -65,7 +65,7 @@ Add your Gemini API Key:
 GOOGLE_API_KEY=your_api_key_here
 ```
 
-## 7. Run the Application
+## 8. Run the Application
 You can run it manually to test:
 ```bash
 sudo python3 src/main.py
