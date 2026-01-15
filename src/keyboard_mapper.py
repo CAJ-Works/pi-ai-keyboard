@@ -42,7 +42,7 @@ def write_report(report):
     try:
         if not os.path.exists(HID_DEV):
              # For testing/development on non-gadget devices, we just print
-             # print(f"DEBUG: Would write report {list(report)}")
+             print(f"DEBUG: HID device {HID_DEV} not found! Skipping write.")
              return
 
         with open(HID_DEV, "wb+") as fd:
