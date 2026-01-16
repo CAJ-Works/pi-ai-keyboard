@@ -38,10 +38,10 @@ class LLMClient:
             
             print("Sending to Gemini...")
             
-            # Using gemini-3-flash-preview as requested
+            # Using gemini-2.0-flash as requested
             # Explicitly wrapping text in Part as well
             response = self.client.models.generate_content(
-                model='gemini-3-flash-preview',
+                model='gemini-2.0-flash',
                 contents=[
                     types.Part.from_text(text=instruction),
                     types.Part.from_bytes(data=audio_bytes, mime_type="audio/wav")
