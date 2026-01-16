@@ -38,12 +38,38 @@ To enable the Pi to act as a keyboard, we need to run the `usb_gadget.sh` script
    # /home/cajames/pi-ai-keyboard/scripts/usb_gadget.sh &
    ```
    *Adjust the path if you placed the code elsewhere.*
-3. Enable `dwc2` overlay:
+3. **Enable `dwc2` overlay (CRITICAL)**:
+   This allows the Pi's USB port to act as a device.
+   
+   Edit your config file:
    ```bash
-   echo "dtoverlay=dwc2" | sudo tee -a /boot/config.txt
+   sudo nano /boot/config.txt
+   # OR if that file is empty/missing, try:
+   # sudo nano /boot/firmware/config.txt
+   ```
+   Add the following lines to the bottom:
+   ```
+   dtoverlay=dwc2,dr_mode=peripheral
+   ```
+   *Save and exit (Ctrl+O, Enter, Ctrl+X).*
+
+4. Enable Modules:
+   ```bash
    echo "dwc2" | sudo tee -a /etc/modules
    echo "libcomposite" | sudo tee -a /etc/modules
    ```
+   
+5. **REBOOT**:
+   You must reboot for these changes to take effect.
+   ```bash
+   sudo reboot
+   ```
+   
+6. Verify after reboot:
+   ```bash
+   ls /sys/class/udc
+   ```
+   *This should return a value (e.g. `fe980000.usb`). If empty, check config.txt again.*
 
 ## 6. Setup Input Device (Keyboard)
 1. By default, the script looks for a device with "Keyboard" in its name.
@@ -77,3 +103,23 @@ sudo .venv/bin/python3 src/main.py
 *(Sudo might be needed for GPIO and HID device access)*
 
 To run on boot, consider adding a systemd service.
+
+## 9. Troubleshooting
+
+### "HID device /dev/hidg0 not found"
+This means the USB Gadget script did not run successfully.
+1. Check `ls /sys/class/udc`. If empty, checking Step 5 (Config.txt).
+2. If the gadget is stuck ("Device or resource busy"), run the reset script:
+   ```bash
+   sudo ./scripts/reset_gadget.sh
+   ```
+   Then try configuring again:
+   ```bash
+   sudo ./scripts/usb_gadget.sh
+   ```
+
+### "Gemini 404 / Model not found"
+The code in `src/llm_client.py` will print a specific "Available Models" list if it hits a 404. Check your console output and update the model name in `src/llm_client.py` to match one available to your API key.
+
+### Audio recording silent
+The `src/audio_handler.py` attempts to auto-select USB microphones. Watch the console on startup for `*** Selected Input Device: ... ***`. If it selects a different device, you may need to edit the filtering logic in `src/audio_handler.py`.
