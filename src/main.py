@@ -36,6 +36,8 @@ INPUT_MAP = {
     ecodes.KEY_F1: "Transcribe the following audio precisely.",
     ecodes.KEY_F2: "Expand the following audio into a concise paragraph.",
     ecodes.KEY_F3: "Follow the instructions and provide a concise response.",
+    ecodes.KEY_F4: "Rephrase this to how a pirate would say it.",
+    ecodes.KEY_F5: "Rephrase this to how shakespear would write it.",
 }
 
 # State
