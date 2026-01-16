@@ -34,8 +34,8 @@ DEVICE_NAME_SEARCH = "Keyboard"
 # Using Function keys to avoid accidental typing if the keyboard is also doing other things (though we grab it).
 INPUT_MAP = {
     ecodes.KEY_F1: "Transcribe the following audio precisely.",
-    ecodes.KEY_F2: "Summarize the following audio into a concise paragraph.",
-    ecodes.KEY_F3: "Format the following code or text structure cleanly.",
+    ecodes.KEY_F2: "Expand the following audio into a concise paragraph.",
+    ecodes.KEY_F3: "Follow the instructions and provide a concise response.",
 }
 
 # State
