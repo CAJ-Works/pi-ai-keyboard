@@ -43,6 +43,7 @@ def write_report(report):
         if not os.path.exists(HID_DEV):
              # For testing/development on non-gadget devices, we just print
              print(f"DEBUG: HID device {HID_DEV} not found! Skipping write.")
+             print("TIP: Run 'sudo ./scripts/usb_gadget.sh' to configure the device.")
              return
 
         with open(HID_DEV, "wb+") as fd:

@@ -3,6 +3,7 @@ import time
 import os
 import signal
 import sys
+import subprocess
 import evdev 
 from select import select
 from evdev import InputDevice, categorize, ecodes
@@ -64,6 +65,17 @@ def main():
 
     # Initialize handlers
     print("Initializing services...")
+    
+    # Configure USB Gadget
+    try:
+        print("Configuring USB Gadget...")
+        subprocess.run(["sudo", "./scripts/reset_gadget.sh"], check=False)
+        time.sleep(1) # Give it a moment to clear
+        subprocess.run(["sudo", "./scripts/usb_gadget.sh"], check=True)
+        time.sleep(2) # Allow gadget to register
+    except Exception as e:
+        print(f"Warning: Failed to configure USB gadget: {e}")
+
     llm_client = LLMClient()
     
     # Initialize AudioHandler with ALSA suppression
