@@ -41,7 +41,8 @@ class LLMClient:
             # Reverting to gemini-1.5-flash for rate limits
             # Explicitly wrapping text in Part as well
             response = self.client.models.generate_content(
-                model='gemini-1.5-flash',                contents=[
+                model='gemini-2.0-flash-lite',
+                contents=[
                     types.Part.from_text(text=instruction),
                     types.Part.from_bytes(data=audio_bytes, mime_type="audio/wav")
                 ]
