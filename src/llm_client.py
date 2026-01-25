@@ -57,10 +57,7 @@ class LLMClient:
                             # actually, standard is usually separate.
                             # Let's use the patterns found in search: "type": "audio_url"
                             "type": "input_audio", 
-                            "input_audio": {
-                                "data": base64_audio,
-                                "format": "wav"
-                            }
+                            "input_audio": f"data:audio/wav;base64,{base64_audio}"
                         }
                     ]
                 }
