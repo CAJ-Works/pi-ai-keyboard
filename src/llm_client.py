@@ -38,7 +38,7 @@ class LLMClient:
             # Using 'pixtral-large-latest' or similar multimodal; 
             # ideally 'voxtral' if specific, but pixtral handles multimodal inputs in many contexts.
             # Adjust model name as needed based on availability.
-            model = "mistral-small-latest" 
+            model = "pixtral-large-latest" 
             
             messages = [
                 {
