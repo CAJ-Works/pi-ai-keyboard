@@ -119,7 +119,7 @@ This means the USB Gadget script did not run successfully.
    ```
 
 ### "Mistral Error / Model not found"
-If you encounter errors regarding the model, check `src/llm_client.py`. We are using `pixtral-large-latest` for multimodal support. Ensure your API key has access to this model or update the `model` variable in `src/llm_client.py` to a valid model name.
+If you encounter errors regarding the model, check `src/llm_client.py`. We are using `voxtral-mini-latest` for experimental multimodal support (if available) or standard Mistral models. Ensure your API key has access to this model or update the `model` variable in `src/llm_client.py` to a valid model name.
 
 ### Audio recording silent
 The `src/audio_handler.py` attempts to auto-select USB microphones. Watch the console on startup for `*** Selected Input Device: ... ***`. If it selects a different device, you may need to edit the filtering logic in `src/audio_handler.py`.
