@@ -38,7 +38,7 @@ class LLMClient:
             # Using 'pixtral-large-latest' or similar multimodal; 
             # ideally 'voxtral' if specific, but pixtral handles multimodal inputs in many contexts.
             # Adjust model name as needed based on availability.
-            model = "pixtral-large-latest" 
+            model = "mistral-small-latest" 
             
             messages = [
                 {
@@ -56,8 +56,11 @@ class LLMClient:
                             # Let's try the standard multimodal 'image_url' pattern but for audio? 
                             # actually, standard is usually separate.
                             # Let's use the patterns found in search: "type": "audio_url"
-                            "type": "audio_url", 
-                            "audio_url": f"data:audio/wav;base64,{base64_audio}"
+                            "type": "input_audio", 
+                            "input_audio": {
+                                "data": base64_audio,
+                                "format": "wav"
+                            }
                         }
                     ]
                 }
