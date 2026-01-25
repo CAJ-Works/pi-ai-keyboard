@@ -1,4 +1,4 @@
-google-genai
+mistralai
 pyaudio
 evdev
 python-dotenv

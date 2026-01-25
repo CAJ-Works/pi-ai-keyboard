@@ -86,9 +86,9 @@ Create a `.env` file in the root directory:
 ```bash
 nano .env
 ```
-Add your Gemini API Key:
+Add your Mistral API Key:
 ```
-GOOGLE_API_KEY=your_api_key_here
+MISTRAL_API_KEY=your_api_key_here
 ```
 
 ## 8. Run the Application
@@ -118,8 +118,8 @@ This means the USB Gadget script did not run successfully.
    sudo ./scripts/usb_gadget.sh
    ```
 
-### "Gemini 404 / Model not found"
-The code in `src/llm_client.py` will print a specific "Available Models" list if it hits a 404. Check your console output and update the model name in `src/llm_client.py` to match one available to your API key.
+### "Mistral Error / Model not found"
+If you encounter errors regarding the model, check `src/llm_client.py`. We are using `pixtral-large-latest` for multimodal support. Ensure your API key has access to this model or update the `model` variable in `src/llm_client.py` to a valid model name.
 
 ### Audio recording silent
 The `src/audio_handler.py` attempts to auto-select USB microphones. Watch the console on startup for `*** Selected Input Device: ... ***`. If it selects a different device, you may need to edit the filtering logic in `src/audio_handler.py`.

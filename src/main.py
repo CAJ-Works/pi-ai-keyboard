@@ -139,7 +139,7 @@ def main():
                                         print("Sending to LLM...")
                                         try:
                                             response = llm_client.process_audio(audio_path, current_instruction)
-                                            print(f"DEBUG: Response from Gemini:\n{response}")
+                                            print(f"DEBUG: Response from Mistral:\n{response}")
                                             print(f"Response received ({len(response)} chars). Typing...")
                                             type_string(response)
                                             print("Done.")
