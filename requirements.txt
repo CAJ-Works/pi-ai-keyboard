@@ -1,4 +1,4 @@
-mistralai
+groq
 pyaudio
 evdev
 python-dotenv

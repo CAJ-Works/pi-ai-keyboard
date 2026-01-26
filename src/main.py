@@ -163,7 +163,7 @@ def main():
                                             # Disable alarm if successful
                                             signal.alarm(0)
                                             
-                                            print(f"DEBUG: Response from Mistral:\n{response}")
+                                            print(f"DEBUG: Response from Groq:\n{response}")
                                             print(f"Response received ({len(response)} chars). Typing...")
                                             type_string(response)
                                             print("Done.")
