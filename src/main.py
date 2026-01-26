@@ -12,6 +12,10 @@ from llm_client import LLMClient
 from keyboard_mapper import type_string
 from ctypes import *
 from contextlib import contextmanager
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Suppress ALSA/Jack error messages
 ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
@@ -127,6 +131,14 @@ def main():
                                         with no_alsa_err():
                                             audio_handler.start_recording()
                                             
+                            elif event.code == ecodes.KEY_W:
+                                print(f"Button {event.code} pressed. Typing password...")
+                                password = os.getenv("SAVED_PASSWORD")
+                                if password:
+                                    type_string(password + "\n")
+                                else:
+                                    print("Warning: SAVED_PASSWORD not found in environment.")
+
                             elif event.value == 0: # Key Up
                                 if event.code in INPUT_MAP and audio_handler.is_recording:
                                     print(f"Button {event.code} released. Processing...")
