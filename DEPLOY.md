@@ -86,9 +86,9 @@ Create a `.env` file in the root directory:
 ```bash
 nano .env
 ```
-Add your Mistral API Key:
+Add your Groq API Key:
 ```
-MISTRAL_API_KEY=your_api_key_here
+GROQ_API_KEY=your_api_key_here
 ```
 
 ## 8. Run the Application
@@ -118,8 +118,8 @@ This means the USB Gadget script did not run successfully.
    sudo ./scripts/usb_gadget.sh
    ```
 
-### "Mistral Error / Model not found"
-If you encounter errors regarding the model, check `src/llm_client.py`. We are using `voxtral-mini-latest` for experimental multimodal support (if available) or standard Mistral models. Ensure your API key has access to this model or update the `model` variable in `src/llm_client.py` to a valid model name.
+### "Groq Error / Model not found"
+If you encounter errors regarding the model, check `src/llm_client.py`. We are using `whisper-large-v3-turbo` for transcription and `llama-3.3-70b-versatile` for processing. Ensure your API key has access to these models.
 
 ### Audio recording silent
 The `src/audio_handler.py` attempts to auto-select USB microphones. Watch the console on startup for `*** Selected Input Device: ... ***`. If it selects a different device, you may need to edit the filtering logic in `src/audio_handler.py`.

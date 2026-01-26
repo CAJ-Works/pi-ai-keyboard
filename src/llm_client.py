@@ -1,25 +1,22 @@
-
 import os
-import os
-import base64
-from mistralai import Mistral
+from groq import Groq
 from dotenv import load_dotenv
 
 # Load env variables
 load_dotenv()
 
-API_KEY = os.getenv("MISTRAL_API_KEY")
+API_KEY = os.getenv("GROQ_API_KEY")
 
 class LLMClient:
     def __init__(self):
         if not API_KEY:
-            print("WARNING: MISTRAL_API_KEY not found in environment.")
+            print("WARNING: GROQ_API_KEY not found in environment.")
         
-        self.client = Mistral(api_key=API_KEY)
+        self.client = Groq(api_key=API_KEY)
 
     def process_audio(self, audio_path, instruction):
         """
-        Uploads audio (base64) and asks Mistral to process it.
+        Transcribes audio using Groq (Whisper) and then processes the text with an LLM.
         """
         if not os.path.exists(audio_path):
             return "Error: Audio file not found."
@@ -27,56 +24,50 @@ class LLMClient:
         try:
             print(f"Reading audio: {audio_path}...")
             
-            with open(audio_path, "rb") as f:
-                audio_bytes = f.read()
-                
-            base64_audio = base64.b64encode(audio_bytes).decode("utf-8")
+            # 1. Transcribe Audio
+            with open(audio_path, "rb") as file:
+                transcription = self.client.audio.transcriptions.create(
+                    file=(audio_path, file.read()),
+                    model="whisper-large-v3-turbo",
+                    response_format="text"
+                )
             
-            print(f"DEBUG: Read {len(audio_bytes)} bytes. Sending to Mistral...")
-            
-            # Construct message with mixed content (text + audio)
-            # Using 'pixtral-large-latest' or similar multimodal; 
-            # ideally 'voxtral' if specific, but pixtral handles multimodal inputs in many contexts.
-            # Adjust model name as needed based on availability.
-            model = "voxtral-mini-latest" 
+            print(f"DEBUG: Transcription: {transcription}")
+
+            # 2. Process with LLM
+            # We treat the instruction as the system prompt (or context) and the transcription as the user input?
+            # Or vice versa? 
+            # The instruction is like "Summarize this". 
+            # So: User says: [Audio Content]. System/Prompt says: "Summarize the following text..."
             
             messages = [
                 {
+                    "role": "system",
+                    "content": instruction
+                },
+                {
                     "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": instruction
-                        },
-                        {
-                            "type": "image_url", # Note: Some SDKs use consistent naming, but for audio specifically:
-                            # If using specific audio model, format might differ. 
-                            # Sticking to the standard chat completion with audio if supported.
-                            # Re-verification: Mistral API often uses 'audio_url' or specific audio messages.
-                            # Let's try the standard multimodal 'image_url' pattern but for audio? 
-                            # actually, standard is usually separate.
-                            # Let's use the patterns found in search: "type": "audio_url"
-                            "type": "input_audio", 
-                            "input_audio": f"data:audio/wav;base64,{base64_audio}"
-                        }
-                    ]
+                    "content": transcription
                 }
             ]
 
-            response = self.client.chat.complete(
-                model=model,
-                messages=messages
+            completion = self.client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=messages,
+                temperature=0.5,
+                max_completion_tokens=1024,
+                top_p=1,
+                stop=None,
+                stream=False,
             )
             
-            if response.choices:
-                return response.choices[0].message.content
+            if completion.choices:
+                return completion.choices[0].message.content
             return "No response content."
 
         except Exception as e:
-            print(f"Error calling Mistral: {e}")
+            print(f"Error calling Groq: {e}")
             return f"Error: {str(e)}"
-
-if __name__ == "__main__":
     # Test stub
     # client = LLMClient()
     pass
