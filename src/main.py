@@ -34,11 +34,11 @@ DEVICE_NAME_SEARCH = "Keyboard"
 # Map Button Codes to Instructions
 # Using Function keys to avoid accidental typing if the keyboard is also doing other things (though we grab it).
 INPUT_MAP = {
-    ecodes.KEY_F1: "Transcribe the following audio and correct gramatical errors.  Respond with the the transcription",
-    ecodes.KEY_F2: "Expand the following audio into a concise paragraph.",
-    ecodes.KEY_F3: "Follow the instructions and provide a concise response with enough detail to be intelligent.",
-    ecodes.KEY_F4: "Rephrase this to how a pirate would say it. Only return a single responce.  Don't give multiple options or additional context",
-    ecodes.KEY_F5: "Rephrase this to how shakespear would write it. Only return a single responce.  Don't give multiple options or additional context",
+    ecodes.KEY_F1: "You are a transcription engine. Transcribe the audio provided in this message correcting any gramatical errors. Output ONLY the transcription. Do not converse.",
+    ecodes.KEY_F2: "Listen to the audio and expand it into a concise paragraph.",
+    ecodes.KEY_F3: "Listen to the instructions in the audio and perform the task requested. Be concise and intelligent.",
+    ecodes.KEY_F4: "Listen to the audio and rephrase the content as a pirate would say it. Return only the pirate speech.",
+    ecodes.KEY_F5: "Listen to the audio and rephrase the content in the style of Shakespeare. Return only the rephrased text.",
 }
 
 # State
