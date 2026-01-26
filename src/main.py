@@ -64,6 +64,10 @@ def find_device():
     # User can verify with evtest.
     return None
 
+def timeout_handler(signum, frame):
+    raise TimeoutError("LLM Request Timed Out")
+
+
 def main():
     global current_instruction, is_processing
 
@@ -150,12 +154,25 @@ def main():
                                     if audio_path:
                                         print("Sending to LLM...")
                                         try:
+                                            # Set timeout for 8 seconds
+                                            signal.signal(signal.SIGALRM, timeout_handler)
+                                            signal.alarm(8)
+                                            
                                             response = llm_client.process_audio(audio_path, current_instruction)
+                                            
+                                            # Disable alarm if successful
+                                            signal.alarm(0)
+                                            
                                             print(f"DEBUG: Response from Mistral:\n{response}")
                                             print(f"Response received ({len(response)} chars). Typing...")
                                             type_string(response)
                                             print("Done.")
+                                            
+                                        except TimeoutError:
+                                            print("Error: specific LLM request timed out after 8 seconds.")
+                                            # No specific cleanup needed other than resetting state which happens below
                                         except Exception as e:
+                                            signal.alarm(0) # Ensure alarm is off
                                             print(f"Error processing: {e}")
                                     else:
                                         print("No audio recorded.")
