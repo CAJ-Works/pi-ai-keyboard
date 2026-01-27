@@ -73,7 +73,24 @@ def send_key(char):
     # Small delay between keystrokes to prevent buffer overruns on host
     time.sleep(0.01) 
 
+
+# Common substitutions for smart quotes, dashes, etc. produced by LLMs
+SMART_REPLACEMENTS = {
+    '“': '"',
+    '”': '"',
+    '‘': "'",
+    '’': "'",
+    '—': '--',
+    '–': '-',
+    '…': '...',
+    '\u00A0': ' ',
+}
+
 def type_string(text):
+    # Normalize text to ASCII-compatible characters
+    for old, new in SMART_REPLACEMENTS.items():
+        text = text.replace(old, new)
+
     for char in text:
         send_key(char)
 
