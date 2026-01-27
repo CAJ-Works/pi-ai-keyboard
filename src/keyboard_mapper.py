@@ -67,11 +67,14 @@ def send_key(char):
     report = bytearray([mod, 0, code, 0, 0, 0, 0, 0])
     write_report(report)
     
+    # Hold key for a bit so host sees it
+    time.sleep(0.02)
+    
     # Release key
     write_report(bytearray([0]*8))
     
     # Small delay between keystrokes to prevent buffer overruns on host
-    time.sleep(0.01) 
+    time.sleep(0.02) 
 
 
 # Common substitutions for smart quotes, dashes, etc. produced by LLMs
