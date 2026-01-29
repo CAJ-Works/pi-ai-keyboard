@@ -74,7 +74,7 @@ def send_key(char):
     write_report(bytearray([0]*8))
     
     # Small delay between keystrokes to prevent buffer overruns on host
-    time.sleep(0.02) 
+    time.sleep(0.012) 
 
 
 # Common substitutions for smart quotes, dashes, etc. produced by LLMs
