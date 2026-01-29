@@ -1,0 +1,16 @@
+[Unit]
+Description=Pi AI Keyboard Service
+After=multi-user.target
+
+[Service]
+Type=simple
+User=root
+# CHANGE THIS PATH to match where you installed the repo (e.g. /home/pi/pi-ai-keyboard)
+WorkingDirectory=/home/replace_me/pi-ai-keyboard
+# CHANGE THIS PATH to point to the virtual environment python
+ExecStart=/home/replace_me/pi-ai-keyboard/.venv/bin/python3 src/main.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
