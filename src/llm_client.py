@@ -1,22 +1,39 @@
 import os
-from groq import Groq
+from openai import OpenAI
 from dotenv import load_dotenv
 
 # Load env variables
 load_dotenv()
 
-API_KEY = os.getenv("GROQ_API_KEY")
-
 class LLMClient:
     def __init__(self):
-        if not API_KEY:
-            print("WARNING: GROQ_API_KEY not found in environment.")
+        # LLM Configuration (for Chat/Completion)
+        # Default to a placeholder or localhost if not set, but user usually sets these in .env
+        self.llm_base_url = os.getenv("LLM_BASE_URL", "http://localhost:11434/v1")
+        self.llm_api_key = os.getenv("LLM_API_KEY", "ollama") # Many local servers accept any string
+        self.llm_model = os.getenv("LLM_MODEL", "llama-3.3-70b-versatile")
+
+        # STT Configuration (for Whisper)
+        # Often provided by a different service or port (e.g. OpenAI Whisper or a local inference server)
+        self.stt_base_url = os.getenv("STT_BASE_URL", self.llm_base_url)
+        self.stt_api_key = os.getenv("STT_API_KEY", self.llm_api_key)
+        self.stt_model = os.getenv("STT_MODEL", "whisper-large-v3-turbo")
+
+        self.debug = os.getenv("DEBUG_LLM", "False").lower() == "true"
+
+        print(f"LLM Client: {self.llm_base_url} (Model: {self.llm_model})")
+        print(f"STT Client: {self.stt_base_url} (Model: {self.stt_model})")
+
+        self.llm_client = OpenAI(base_url=self.llm_base_url, api_key=self.llm_api_key)
         
-        self.client = Groq(api_key=API_KEY)
+        if self.stt_base_url == self.llm_base_url and self.stt_api_key == self.llm_api_key:
+            self.stt_client = self.llm_client
+        else:
+            self.stt_client = OpenAI(base_url=self.stt_base_url, api_key=self.stt_api_key)
 
     def process_audio(self, audio_path, instruction):
         """
-        Transcribes audio using Groq (Whisper) and then processes the text with an LLM.
+        Transcribes audio using a local Whisper model and then processes the text with a local LLM.
         """
         if not os.path.exists(audio_path):
             return "Error: Audio file not found."
@@ -26,20 +43,27 @@ class LLMClient:
             
             # 1. Transcribe Audio
             with open(audio_path, "rb") as file:
-                transcription = self.client.audio.transcriptions.create(
+                transcription_response = self.stt_client.audio.transcriptions.create(
                     file=(audio_path, file.read()),
-                    model="whisper-large-v3-turbo",
-                    response_format="text"
+                    model=self.stt_model,
+                    response_format="text" # can be 'json', 'text', 'srt', 'verbose_json', or 'vtt'
                 )
             
-            print(f"DEBUG: Transcription: {transcription}")
+            # Handle response_format='text' which returns a string directly? 
+            # OpenAI python client with response_format='text' usually returns the string.
+            # If default (json), it returns an object.
+            # Let's assume text for simplicity as per previous code, but standard OpenAI client behavior:
+            # If response_format is 'text', it returns str.
+            transcription = transcription_response
+            
+            if self.debug:
+                print(f"DEBUG: Transcription: {transcription}")
+            
+            if not transcription or isinstance(transcription, str) and not transcription.strip():
+                 print("Warning: Empty transcription.")
+                 return "Error: Could not transcribe audio."
 
             # 2. Process with LLM
-            # We treat the instruction as the system prompt (or context) and the transcription as the user input?
-            # Or vice versa? 
-            # The instruction is like "Summarize this". 
-            # So: User says: [Audio Content]. System/Prompt says: "Summarize the following text..."
-            
             messages = [
                 {
                     "role": "system",
@@ -51,8 +75,8 @@ class LLMClient:
                 }
             ]
 
-            completion = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+            completion = self.llm_client.chat.completions.create(
+                model=self.llm_model,
                 messages=messages,
                 temperature=0.5,
                 max_completion_tokens=1024,
@@ -66,8 +90,10 @@ class LLMClient:
             return "No response content."
 
         except Exception as e:
-            print(f"Error calling Groq: {e}")
+            print(f"Error calling LLM/STT provider: {e}")
             return f"Error: {str(e)}"
+
+if __name__ == "__main__":
     # Test stub
     # client = LLMClient()
     pass
