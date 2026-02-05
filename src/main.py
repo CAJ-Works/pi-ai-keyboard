@@ -160,6 +160,14 @@ def main():
                                 else:
                                     print("Warning: SAVED_PASSWORD not found in environment.")
 
+                            elif event.code == ecodes.KEY_E:
+                                print(f"Button {event.code} pressed. Typing email...")
+                                email = os.getenv("SAVED_EMAIL")
+                                if email:
+                                    type_string(email)
+                                else:
+                                    print("Warning: SAVED_EMAIL not found in environment.")
+
                             elif event.value == 0: # Key Up
                                 if event.code in INPUT_MAP and audio_handler.is_recording:
                                     print(f"Button {event.code} released. Processing...")
