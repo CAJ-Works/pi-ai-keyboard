@@ -50,18 +50,35 @@ current_instruction = None
 is_processing = False
 
 def find_device():
-    print("Scanning for input devices...")
-    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+    print("Scanning for all input devices...")
+    try:
+        devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+    except Exception as e:
+        print(f"Error listing devices: {e}")
+        return None
     
-    # First pass: Look for exact or partial match of DEVICE_NAME_SEARCH
+    candidates = []
+    
+    # Iterate through ALL devices first to log them
     for d in devices:
         print(f"  Found: {d.path}: {d.name}")
         if DEVICE_NAME_SEARCH.lower() in d.name.lower():
-            print(f"Selecting device: {d.name} ({d.path})")
+            candidates.append(d)
+            
+    # Selection Logic:
+    # 1. Look for a candidate that does NOT contain "Consumer Control" or "System Control"
+    #    (These usually handle media keys, not typing keys)
+    for d in candidates:
+        name_lower = d.name.lower()
+        if "consumer control" not in name_lower and "system control" not in name_lower:
+            print(f"Selecting best match: {d.name} ({d.path})")
             return d
+
+    # 2. Fallback: If we only found filtered devices (e.g. only Consumer Control), pick the first one.
+    if candidates:
+        print(f"Warning: Only found partial matches (likely media interfaces). Selecting: {candidates[0].name} ({candidates[0].path})")
+        return candidates[0]
     
-    # Fallback: If no "Keyboard" found, maybe it's just a generic "USB Device"
-    # User can verify with evtest.
     return None
 
 def timeout_handler(signum, frame):
