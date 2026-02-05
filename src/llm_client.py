@@ -39,21 +39,18 @@ class LLMClient:
             return "Error: Audio file not found."
             
         try:
-            print(f"Reading audio: {audio_path}...")
+            print(f"Reading audio: {audio_path} (Size: {os.path.getsize(audio_path)} bytes)...")
             
             # 1. Transcribe Audio
+            print(f"DEBUG: Starting STT (Model: {self.stt_model})...")
             with open(audio_path, "rb") as file:
                 transcription_response = self.stt_client.audio.transcriptions.create(
-                    file=(audio_path, file.read()),
+                    file=(os.path.basename(audio_path), file.read()),
                     model=self.stt_model,
-                    response_format="text" # can be 'json', 'text', 'srt', 'verbose_json', or 'vtt'
+                    response_format="text"
                 )
-            
-            # Handle response_format='text' which returns a string directly? 
-            # OpenAI python client with response_format='text' usually returns the string.
-            # If default (json), it returns an object.
-            # Let's assume text for simplicity as per previous code, but standard OpenAI client behavior:
-            # If response_format is 'text', it returns str.
+            print("DEBUG: STT Complete.")
+
             transcription = transcription_response
             
             if self.debug:
@@ -64,6 +61,7 @@ class LLMClient:
                  return "Error: Could not transcribe audio."
 
             # 2. Process with LLM
+            print(f"DEBUG: Starting LLM (Model: {self.llm_model})...")
             messages = [
                 {
                     "role": "system",
