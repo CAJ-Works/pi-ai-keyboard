@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 # Load env variables
 load_dotenv()
+# Trigger git update
 
 API_KEY = os.getenv("GROQ_API_KEY")
 
