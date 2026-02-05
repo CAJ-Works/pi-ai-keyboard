@@ -91,6 +91,8 @@ class LLMClient:
 
         except Exception as e:
             print(f"Error calling LLM/STT provider: {e}")
+            if hasattr(e, 'response') and hasattr(e.response, 'text'):
+                 print(f"DEBUG: Remote Error Details: {e.response.text}")
             return f"Error: {str(e)}"
 
 if __name__ == "__main__":
