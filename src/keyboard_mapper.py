@@ -74,7 +74,7 @@ def send_key(char):
     write_report(bytearray([0]*8))
     
     # Small delay between keystrokes to prevent buffer overruns on host
-    time.sleep(0.025) 
+    time.sleep(0.018) 
 
 
 # Common substitutions for smart quotes, dashes, etc. produced by LLMs
@@ -96,6 +96,9 @@ def type_string(text):
 
     for char in text:
         send_key(char)
+        # Extra delay after sentence-ending punctuation to allow host processing (e.g. auto-capitalization)
+        if char in ['.', '!', '?', '\n']:
+            time.sleep(0.15)
 
 if __name__ == "__main__":
     print("Testing keyboard mapper...")
