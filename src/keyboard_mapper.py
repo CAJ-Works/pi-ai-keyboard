@@ -98,7 +98,7 @@ def type_string(text):
         send_key(char)
         # Extra delay after sentence-ending punctuation to allow host processing (e.g. auto-capitalization)
         if char in ['.', '!', '?', '\n']:
-            time.sleep(0.15)
+            time.sleep(0.1)
 
 if __name__ == "__main__":
     print("Testing keyboard mapper...")
