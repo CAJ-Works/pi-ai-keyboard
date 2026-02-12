@@ -34,7 +34,7 @@ KEY_MAP = {
     '_': (2, 0x2D), '+': (2, 0x2E), '{': (2, 0x2F), '}': (2, 0x30), '|': (2, 0x31),
     ':': (2, 0x33), '"': (2, 0x34), '~': (2, 0x35), '<': (2, 0x36), '>': (2, 0x37),
     '?': (2, 0x38),
-}
+} 
 
 HID_DEV = "/dev/hidg0"
 
@@ -46,8 +46,16 @@ def write_report(report):
              print("TIP: Run 'sudo ./scripts/usb_gadget.sh' to configure the device.")
              return
 
-        with open(HID_DEV, "wb+") as fd:
-            fd.write(report)
+        # Open in write-only, non-blocking mode to prevent hanging if host is disconnected
+        flags = os.O_WRONLY
+        if hasattr(os, 'O_NONBLOCK'):
+            flags |= os.O_NONBLOCK
+
+        fd = os.open(HID_DEV, flags)
+        try:
+            os.write(fd, report)
+        finally:
+            os.close(fd)
     except IOError as e:
         print(f"Error writing to {HID_DEV}: {e}")
 

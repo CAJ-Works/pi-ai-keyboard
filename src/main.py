@@ -13,6 +13,7 @@ from keyboard_mapper import type_string
 from ctypes import *
 from contextlib import contextmanager
 from dotenv import load_dotenv
+import threading
 
 # Load environment variables
 load_dotenv()
@@ -81,6 +82,76 @@ def find_device():
     
     return None
 
+def monitor_usb_connection():
+    """
+    Monitors the USB gadget state (via /sys/class/udc).
+    If the state transitions from disconnected -> configured,
+    it re-initializes the gadget to ensure the host sees it correctly.
+    """
+    print("Starting USB Connection Monitor...")
+    last_state = "unknown"
+    
+    # Allow some time for initial setup to settle 
+    time.sleep(5)
+    
+    while True:
+        try:
+            udc_dir = "/sys/class/udc"
+            current_state = "unknown"
+            
+            if os.path.exists(udc_dir):
+                udc_entries = os.listdir(udc_dir)
+                if udc_entries:
+                    # Assuming the first entry is our UDC (e.g. fe980000.usb)
+                    udc_name = udc_entries[0]
+                    state_file = os.path.join(udc_dir, udc_name, "state")
+                    
+                    if os.path.exists(state_file):
+                        with open(state_file, "r") as f:
+                            current_state = f.read().strip()
+                    else:
+                        current_state = "no_state_file"
+                else:
+                    current_state = "no_udc_entry"
+            else:
+                current_state = "no_udc_dir"
+            
+            # Handle Startup/First Loop
+            if last_state == "unknown":
+                last_state = current_state
+                time.sleep(2)
+                continue
+
+            # Check for Reconnection (Transition to 'configured')
+            if (last_state != "configured") and (current_state == "configured"):
+                print(f"USB Reconnection Detected (State: {current_state}). Re-initializing gadget...")
+                
+                # Re-run the setup scripts
+                try:
+                    subprocess.run(["sudo", "./scripts/reset_gadget.sh"], check=False)
+                    time.sleep(1) 
+                    subprocess.run(["sudo", "./scripts/usb_gadget.sh"], check=True)
+                    print("Gadget re-initialized successfully.")
+                    
+                    # Update state to configured and sleep to prevent immediate loop
+                    last_state = "configured"
+                    time.sleep(5)
+                    continue
+                    
+                except Exception as e:
+                    print(f"Error re-initializing gadget: {e}")
+
+            elif (last_state == "configured") and (current_state != "configured"):
+                print(f"USB Disconnected (State: {current_state})")
+            
+            last_state = current_state
+
+        except Exception as e:
+            print(f"Monitor Error: {e}")
+        
+        time.sleep(2)
+
+
 def timeout_handler(signum, frame):
     raise TimeoutError("LLM Request Timed Out")
 
@@ -100,6 +171,10 @@ def main():
         time.sleep(2) # Allow gadget to register
     except Exception as e:
         print(f"Warning: Failed to configure USB gadget: {e}")
+
+    # Start Monitor Thread
+    monitor_thread = threading.Thread(target=monitor_usb_connection, daemon=True)
+    monitor_thread.start()
 
     llm_client = LLMClient()
     
