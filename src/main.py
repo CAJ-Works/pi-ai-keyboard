@@ -124,22 +124,14 @@ def monitor_usb_connection():
 
             # Check for Reconnection (Transition to 'configured')
             if (last_state != "configured") and (current_state == "configured"):
-                print(f"USB Reconnection Detected (State: {current_state}). Re-initializing gadget...")
+                print(f"USB Reconnection Detected (State: {current_state}).")
+                # We previously tried resetting the gadget here, but that interrupts the host enumeration
+                # causing "Device Not Recognized". Since we fixed the blocking write issue, 
+                # we likely don't need to reset the gadget at all.
                 
-                # Re-run the setup scripts
-                try:
-                    subprocess.run(["sudo", "./scripts/reset_gadget.sh"], check=False)
-                    time.sleep(1) 
-                    subprocess.run(["sudo", "./scripts/usb_gadget.sh"], check=True)
-                    print("Gadget re-initialized successfully.")
-                    
-                    # Update state to configured and sleep to prevent immediate loop
-                    last_state = "configured"
-                    time.sleep(5)
-                    continue
-                    
-                except Exception as e:
-                    print(f"Error re-initializing gadget: {e}")
+                # Update state to configured
+                last_state = "configured"
+                continue
 
             elif (last_state == "configured") and (current_state != "configured"):
                 print(f"USB Disconnected (State: {current_state})")
