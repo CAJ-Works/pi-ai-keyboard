@@ -105,6 +105,8 @@ def type_string(text):
     for char in text:
         send_key(char)
         # Extra delay after sentence-ending punctuation to allow host processing (e.g. auto-capitalization)
+        # Small delay between keystrokes to prevent buffer overruns on host
+        time.sleep(0.002) 
         if char in ['.', '!', '?', '\n']:
             time.sleep(0.1)
 
