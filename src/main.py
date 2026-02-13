@@ -157,9 +157,14 @@ def main():
     # Configure USB Gadget
     try:
         print("Configuring USB Gadget...")
-        subprocess.run(["sudo", "./scripts/reset_gadget.sh"], check=False)
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(script_dir)
+        reset_script = os.path.join(project_root, "scripts", "reset_gadget.sh")
+        gadget_script = os.path.join(project_root, "scripts", "usb_gadget.sh")
+
+        subprocess.run(["sudo", reset_script], check=False)
         time.sleep(1) # Give it a moment to clear
-        subprocess.run(["sudo", "./scripts/usb_gadget.sh"], check=True)
+        subprocess.run(["sudo", gadget_script], check=True)
         time.sleep(2) # Allow gadget to register
     except Exception as e:
         print(f"Warning: Failed to configure USB gadget: {e}")
