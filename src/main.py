@@ -41,9 +41,9 @@ DEVICE_NAME_SEARCH = "Keyboard"
 INPUT_MAP = {
     ecodes.KEY_F1: "The following text was transcribed by a an AI voice recorder. Correct any gramatical errors. Output ONLY the transcription. Do not converse. Do not put it in quotes or respond starting with 'transcription'.  Spell check the output and ensure that it is proper english grammer and spelling.  Do not answer and questions that are asked or provide any information besides the transcription.",
     ecodes.KEY_F2: "The following text was transcribed by a an AI voice recorder. Expand it into a concise paragraph.",
-    ecodes.KEY_F3: "The following text was transcribed by a an AI voice recorder.  Perform the task requested. Be concise and intelligent.",
-    ecodes.KEY_F4: "The following text was transcribed by a an AI voice recorder.  Rephrase the content as a pirate would say it. Return only the pirate speech.",
-    ecodes.KEY_F5: "The following text was transcribed by a an AI voice recorder.  Rephrase the content in the style of Shakespeare. Return only the rephrased text.",
+    ecodes.KEY_F3: "The following text was transcribed by a an AI voice recorder. Perform the task requested. Be concise and intelligent.",
+    ecodes.KEY_F4: "The following text was transcribed by a an AI voice recorder. Rephrase the content as a pirate would say it. Return only the pirate speech.",
+    ecodes.KEY_F5: "The following text was transcribed by a an AI voice recorder. Rephrase the content in the style of Shakespeare. Return only the rephrased text.",
 }
 
 # State
@@ -135,6 +135,23 @@ def monitor_usb_connection():
 
             elif (last_state == "configured") and (current_state != "configured"):
                 print(f"USB Disconnected (State: {current_state})")
+                
+                # Unbind and rebind gadget to reset the controller for next connection
+                try:
+                    gadget_dir = "/sys/kernel/config/usb_gadget/g1"
+                    if os.path.exists(gadget_dir):
+                        # Unbind
+                        with open(os.path.join(gadget_dir, "UDC"), "w") as f:
+                            f.write("\n")
+                        time.sleep(0.2)
+                        # Rebind
+                        udc_entries = os.listdir("/sys/class/udc")
+                        if udc_entries:
+                            with open(os.path.join(gadget_dir, "UDC"), "w") as f:
+                                f.write(udc_entries[0] + "\n")
+                        print("Gadget UDC effectively reset for next connection.")
+                except Exception as e:
+                    print(f"Gadget UDC reset failed: {e}")
             
             last_state = current_state
 
