@@ -46,13 +46,21 @@ def write_report(report):
              print("TIP: Run 'sudo ./scripts/usb_gadget.sh' to configure the device.")
              return
 
-        # Open in write-only, non-blocking mode to prevent hanging if host is disconnected
-        flags = os.O_WRONLY
+        # Open in read-write, non-blocking mode to prevent hanging if host is disconnected
+        # and to allow draining the OUT buffer
+        flags = os.O_RDWR
         if hasattr(os, 'O_NONBLOCK'):
             flags |= os.O_NONBLOCK
 
         fd = os.open(HID_DEV, flags)
         try:
+            # Drain any pending OUT reports (e.g. LED statuses) to prevent gadget freeze
+            try:
+                while True:
+                    os.read(fd, 8)
+            except (BlockingIOError, OSError):
+                pass
+            
             os.write(fd, report)
         finally:
             os.close(fd)
