@@ -165,13 +165,7 @@ def timeout_handler(signum, frame):
     raise TimeoutError("LLM Request Timed Out")
 
 
-def main():
-    global current_instruction, is_processing
-
-    # Initialize handlers
-    print("Initializing services...")
-    
-    # Configure USB Gadget
+def reinitialize_gadget():
     try:
         print("Configuring USB Gadget...")
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -183,8 +177,18 @@ def main():
         time.sleep(1) # Give it a moment to clear
         subprocess.run(["sudo", gadget_script], check=True)
         time.sleep(2) # Allow gadget to register
+        print("USB Gadget initialized/reinitialized successfully.")
     except Exception as e:
         print(f"Warning: Failed to configure USB gadget: {e}")
+
+def main():
+    global current_instruction, is_processing
+
+    # Initialize handlers
+    print("Initializing services...")
+    
+    # Configure USB Gadget
+    reinitialize_gadget()
 
     # Start Monitor Thread
     monitor_thread = threading.Thread(target=monitor_usb_connection, daemon=True)
@@ -256,6 +260,10 @@ def main():
                                     type_string(email)
                                 else:
                                     print("Warning: SAVED_EMAIL not found in environment.")
+                                    
+                            elif event.code == ecodes.KEY_F10:
+                                print(f"Button F10 pressed. Manually reinitializing USB Gadget...")
+                                reinitialize_gadget()
 
                             elif event.value == 0: # Key Up
                                 if event.code in INPUT_MAP and audio_handler.is_recording:
